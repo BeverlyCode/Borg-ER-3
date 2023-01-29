@@ -390,10 +390,8 @@ float doOsc(Uint32 oscid, float input1, float input2)
         o = (getImpulse(oscphase[oscid], r) * a) * d1;
         if(t > 0)
         {
-            o += (getBipulse(oscphase[oscid], r) * a) * d2;
+            o += (getViolin(oscphase[oscid], r) * a) * d2;
         }
-
-        //o = getBipulse(oscphase[oscid], r) * a;
     }
 
     // add/sub/mul modulation inputs
@@ -970,7 +968,7 @@ int main(int argc, char *args[])
     }
 
     // create window
-    window = SDL_CreateWindow("Borg ER-3 - ALPHA 0.86", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screen_rect.w, screen_rect.h, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow("Borg ER-3 - ALPHA 0.88", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, screen_rect.w, screen_rect.h, SDL_WINDOW_SHOWN);
     if(window == NULL)
     {
         fprintf(stderr, "ERROR: SDL_CreateWindow(): %s\n", SDL_GetError());
@@ -985,6 +983,9 @@ int main(int argc, char *args[])
         return 1;
     }
 
+    // credit
+    printf("Borg ER-3 by James William Fletcher\n");
+
     // get app dir
     basedir = SDL_GetBasePath();
     appdir = SDL_GetPrefPath("voxdsp", "borger3");
@@ -998,6 +999,25 @@ int main(int argc, char *args[])
     SDL_GetVersion(&linked);
     printf("Compiled against SDL version %u.%u.%u.\n", compiled.major, compiled.minor, compiled.patch);
     printf("Linked against SDL version %u.%u.%u.\n", linked.major, linked.minor, linked.patch);
+
+    // instructions
+    printf("\n");
+    printf("FART = Frequency, Amplitude, Resolution, Transition\n");
+    printf("Resolution = How many additive sinusoids are combined to make the final waveshape.\n");
+    printf("Transition = Selects which wave shape to output but also allows blending between the shapes.\n");
+    printf("Wave shape order: Sine, Slanted Sine, Square, Saw, Triangle, Impulse, Violin.\n");
+    printf("\n");
+    printf("Adjust the dials by left clicking and dragging or hovering and scrolling mouse 3 in the Y axis.\n");
+    printf("\n");
+    printf("Binds to play audio: spacebar, mouse3, mouse4\n");
+    printf("Reset envelope: right click on it\n");
+    printf("Scroll dial sensitivity selection: right click, three sensitvity options\n");
+    printf("\n");
+    printf("BIQUADS are executed from left to right, first BIQUAD 1, then 2, then 3.\n");
+    printf("\n");
+    printf("Source: https://github.com/mrbid/Borg-ER-3\n");
+    printf("https://meettechniek.info/additional/additive-synthesis.html\n");
+    
 
     // load assets
     loadAssets(screen);
@@ -1110,10 +1130,10 @@ int main(int argc, char *args[])
                             sense = 0.3f / dial_scale[selected_dial];
 
                         // do rotation
+                        synth[selected_bank].dial_state[selected_dial] += ((dial_rect[selected_dial].y+hh) - y)*sense;
+                        //printf("%f %i %i\n", ((dial_rect[selected_dial].y+hh) - y)*sense, ((dial_rect[selected_dial].y+hh) - y), hh);
                         if(dial_neg[selected_dial] == 1)
                         {
-                            synth[selected_bank].dial_state[selected_dial] += ((dial_rect[selected_dial].y+hh) - y)*sense;
-                            //printf("%f %i %i\n", ((dial_rect[selected_dial].y+hh) - y)*sense, ((dial_rect[selected_dial].y+hh) - y), hh);
                             if(synth[selected_bank].dial_state[selected_dial] >= 1.f)
                                 synth[selected_bank].dial_state[selected_dial] = 1.f;
                             else if(synth[selected_bank].dial_state[selected_dial] < -1.f)
@@ -1121,7 +1141,6 @@ int main(int argc, char *args[])
                         }
                         else
                         {
-                            synth[selected_bank].dial_state[selected_dial] += ((dial_rect[selected_dial].y+hh) - y)*sense;
                             if(synth[selected_bank].dial_state[selected_dial] >= 1.f)
                                 synth[selected_bank].dial_state[selected_dial] = 1.f;
                             else if(synth[selected_bank].dial_state[selected_dial] < 0.f)
@@ -1221,19 +1240,75 @@ int main(int argc, char *args[])
                 }
                 break;
 
+                case SDL_MOUSEWHEEL:
+                {
+                    for(int i = 0; i < 50; i++)
+                    {
+                        if(ui.dial_hover[i] == 1)
+                        {
+                            // scale dial sensitivity
+                            float sense = 0.01f / dial_scale[i];
+                            if(select_mode == 0)
+                                sense = 0.1f / dial_scale[i];
+                            else if(select_mode == 1)
+                                sense = 0.01f / dial_scale[i];
+                            else if(select_mode == 2)
+                                sense = 1.f / dial_scale[i];
+
+                            // turn
+                            synth[selected_bank].dial_state[i] += ((float)event.wheel.y)*sense;
+                            printf("%f\n", ((float)event.wheel.y)*sense);
+
+                            // limit
+                            if(dial_neg[i] == 1)
+                            {
+                                if(synth[selected_bank].dial_state[i] >= 1.f)
+                                    synth[selected_bank].dial_state[i] = 1.f;
+                                else if(synth[selected_bank].dial_state[i] < -1.f)
+                                    synth[selected_bank].dial_state[i] = -1.f;
+                            }
+                            else
+                            {
+                                if(synth[selected_bank].dial_state[i] >= 1.f)
+                                    synth[selected_bank].dial_state[i] = 1.f;
+                                else if(synth[selected_bank].dial_state[i] < 0.f)
+                                    synth[selected_bank].dial_state[i] = 0.f;
+                            }
+
+                            // update
+                            doSynth(0);
+                            render(screen);
+
+                            // done
+                            break;
+                        }
+                    }
+                }
+                break;
+
                 case SDL_MOUSEBUTTONDOWN:
                 {
                     const Uint32 x = event.button.x, y = event.button.y;
 
                     if(event.button.button == SDL_BUTTON_RIGHT)
                     {
+                        // reset envelope
+                        if(x > 6 && x < 473 && y > 155 && y < 282)
+                        {
+                            for(int i = 0; i < 466; i++)
+                                synth[selected_bank].envelope[i] = 0.5f;
+                            break;
+                        }
+
+                        // scroll select modes
                         select_mode++;
                         if(select_mode >= 3)
                             select_mode = 0;
                         
+                        // render changes
                         render(screen);
                     }
-                    else if(event.button.button == SDL_BUTTON_X1)
+                    else if(event.button.button == SDL_BUTTON_X1 || event.button.button == SDL_BUTTON_MIDDLE)
                     {
                         doSynth(1);
                         render(screen);
