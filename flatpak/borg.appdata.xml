@@ -10,7 +10,7 @@
 		<p>The envelope can be clicked and dragged into any shape, and the biquads can be manually configured on a per coefficient basis, they are executed in sequential order so BIQUAD 1 executes first.</p>
 	</description>
 	<screenshots>
-		<screenshot>https://dashboard.snapcraft.io/site_media/appmedia/2021/09/Screenshot_2sss.png</screenshot>
+		<screenshot>https://dashboard.snapcraft.io/site_media/appmedia/2023/01/borger3_eyBQLNu.png</screenshot>
 	</screenshots>
 	<url type="homepage">https://github.com/mrbid/Borg-ER-3</url>
 	<releases>
