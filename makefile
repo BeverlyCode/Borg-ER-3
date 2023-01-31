@@ -8,12 +8,8 @@ ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
 
-ifneq ($(LDFLAGS),)
-LINK_DEPS += $(LDFLAGS)
-endif
-
 all:
-	$(CC) $(CFLAGS) $(LDFLAGS) main.c $(LINK_DEPS) -o $(PRJ_NAME)
+	$(CC) $(CFLAGS) main.c $(LINK_DEPS) $(LDFLAGS) -o $(PRJ_NAME)
 
 install:
 	install -Dm 0755 $(PRJ_NAME) -t $(DESTDIR)$(PREFIX)/bin
