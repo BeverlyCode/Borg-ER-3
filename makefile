@@ -1,11 +1,26 @@
+CC ?= cc
+INCLUDE_HEADERS = 
+LINK_DEPS = -lSDL2
+CFLAGS ?= -Ofast
+LDFLAGS = -lm
+PRJ_NAME = borg
+
+ifeq ($(PREFIX),)
+    PREFIX := /usr/local
+endif
+
+ifneq ($(LDFLAGS),)
+LINK_DEPS += $(LDFLAGS)
+endif
+
 all:
-	gcc main.c -Ofast -lSDL2 -lm -o borger3
+	$(CC) $(CFLAGS) $(LDFLAGS) main.c $(INCLUDE_HEADERS) $(LINK_DEPS) -o $(PRJ_NAME)
 
 install:
-	cp borger3 $(DESTDIR)
+	install -Dm 0755 $(PRJ_NAME) -t $(DESTDIR)$(PREFIX)/bin
 
 uninstall:
-	rm $(DESTDIR)/borger3
+	rm -f $(DESTDIR)$(PREFIX)/bin/$(PRJ_NAME)
 
 clean:
-	rm borger3
+	rm -f $(PRJ_NAME)
