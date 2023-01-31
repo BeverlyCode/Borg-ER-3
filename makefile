@@ -1,5 +1,4 @@
 CC ?= cc
-INCLUDE_HEADERS = 
 LINK_DEPS = -lSDL2
 CFLAGS ?= -Ofast
 LDFLAGS = -lm
@@ -14,7 +13,7 @@ LINK_DEPS += $(LDFLAGS)
 endif
 
 all:
-	$(CC) $(CFLAGS) $(LDFLAGS) main.c $(INCLUDE_HEADERS) $(LINK_DEPS) -o $(PRJ_NAME)
+	$(CC) $(CFLAGS) $(LDFLAGS) main.c $(LINK_DEPS) -o $(PRJ_NAME)
 
 install:
 	install -Dm 0755 $(PRJ_NAME) -t $(DESTDIR)$(PREFIX)/bin
