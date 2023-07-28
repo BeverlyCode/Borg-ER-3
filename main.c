@@ -29,6 +29,7 @@
 #include "res.h"
 
 #define SAMPLE_RATE   44100
+float reciprocal_sample_rate = 0.f;
 
 //#define HERMITE_INTERPOLATE // makes no real audible difference
 
@@ -113,17 +114,8 @@ void saveState()
     FILE* f = fopen(file, "wb");
     if(f != NULL)
     {
-        unsigned int strikeout = 0;
-        while(fwrite(&synth[0], sizeof(struct ssynth), 256, f) != 256)
-        {
-            printf("Writing bank failed... Trying again.\n");
-            strikeout++;
-            if(strikeout > 3333)
-            {
-                printf("Saving your data totally failed. Outch. :(\n");
-                break;
-            }
-        }
+        if(fwrite(&synth[0], sizeof(struct ssynth), 256, f) != 256)
+            printf("fwrite() wrote the wrong amount of bytes, save corrupted.\n");
         fclose(f);
     }
 }
@@ -153,14 +145,10 @@ void loadState()
 float oscphase[8] = {0.f}; // oscillator phases
 float doOsc(Uint32 oscid, float input1, float input2)
 {
-    static float reciprocal_sample_rate = 0.f;
     float o = 0.f;
     float f = 0.f, a = 0.f, r = 0.f, t = 0.f;
     Uint8 input1_fmmod = 0, input1_ammod = 0, input1_mod = 0;
     Uint8 input2_fmmod = 0, input2_ammod = 0, input2_mod = 0;
-
-    if(reciprocal_sample_rate == 0)
-        reciprocal_sample_rate = 1.f/(float)SAMPLE_RATE;
 
     // load selected oscillator dial values with scaling
     if(oscid == 1)
@@ -180,6 +168,9 @@ float doOsc(Uint32 oscid, float input1, float input2)
     }
     else if(oscid == 2)
     {
+        // are any outputs enabled?
+        if(synth[selected_bank].am_state[8] + synth[selected_bank].mul_state[8] + synth[selected_bank].fm_state[8] == 0){return 0.f;}
+
         f = synth[selected_bank].dial_state[20] * dial_scale[20];
         a = synth[selected_bank].dial_state[21] * dial_scale[21];
         r = synth[selected_bank].dial_state[22] * dial_scale[22];
@@ -195,6 +186,9 @@ float doOsc(Uint32 oscid, float input1, float input2)
     }
     else if(oscid == 3)
     {
+        // are any outputs enabled?
+        if(synth[selected_bank].am_state[5] + synth[selected_bank].mul_state[5] + synth[selected_bank].fm_state[5] == 0){return 0.f;}
+
         f = synth[selected_bank].dial_state[24] * dial_scale[24];
         a = synth[selected_bank].dial_state[25] * dial_scale[25];
         r = synth[selected_bank].dial_state[26] * dial_scale[26];
@@ -210,6 +204,9 @@ float doOsc(Uint32 oscid, float input1, float input2)
     }
     else if(oscid == 4)
     {
+        // are any outputs enabled?
+        if(synth[selected_bank].am_state[2] + synth[selected_bank].mul_state[2] + synth[selected_bank].fm_state[2] == 0){return 0.f;}
+
         f = synth[selected_bank].dial_state[28] * dial_scale[28];
         a = synth[selected_bank].dial_state[29] * dial_scale[29];
         r = synth[selected_bank].dial_state[30] * dial_scale[30];
@@ -225,6 +222,9 @@ float doOsc(Uint32 oscid, float input1, float input2)
     }
     else if(oscid == 5)
     {
+        // are any outputs enabled?
+        if(synth[selected_bank].am_state[9] + synth[selected_bank].mul_state[9] + synth[selected_bank].fm_state[9] == 0){return 0.f;}
+
         f = synth[selected_bank].dial_state[0] * dial_scale[0];
         a = synth[selected_bank].dial_state[1] * dial_scale[1];
         r = synth[selected_bank].dial_state[2] * dial_scale[2];
@@ -240,6 +240,10 @@ float doOsc(Uint32 oscid, float input1, float input2)
     }
     else if(oscid == 6)
     {
+        // are any outputs enabled?
+        if( synth[selected_bank].am_state[6] + synth[selected_bank].mul_state[6] + synth[selected_bank].fm_state[6] +
+            synth[selected_bank].am_state[7] + synth[selected_bank].mul_state[7] + synth[selected_bank].fm_state[7] == 0){return 0.f;}
+
         f = synth[selected_bank].dial_state[4] * dial_scale[4];
         a = synth[selected_bank].dial_state[5] * dial_scale[5];
         r = synth[selected_bank].dial_state[6] * dial_scale[6];
@@ -255,6 +259,10 @@ float doOsc(Uint32 oscid, float input1, float input2)
     }
     else if(oscid == 7)
     {
+        // are any outputs enabled?
+        if( synth[selected_bank].am_state[3] + synth[selected_bank].mul_state[3] + synth[selected_bank].fm_state[3] +
+            synth[selected_bank].am_state[4] + synth[selected_bank].mul_state[4] + synth[selected_bank].fm_state[4] == 0){return 0.f;}
+
         f = synth[selected_bank].dial_state[8] * dial_scale[8];
         a = synth[selected_bank].dial_state[9] * dial_scale[9];
         r = synth[selected_bank].dial_state[10] * dial_scale[10];
@@ -270,6 +278,10 @@ float doOsc(Uint32 oscid, float input1, float input2)
     }
     else if(oscid == 8)
     {
+        // are any outputs enabled?
+        if( synth[selected_bank].am_state[0] + synth[selected_bank].mul_state[0] + synth[selected_bank].fm_state[0] +
+            synth[selected_bank].am_state[1] + synth[selected_bank].mul_state[1] + synth[selected_bank].fm_state[1] == 0){return 0.f;}
+
         f = synth[selected_bank].dial_state[12] * dial_scale[12];
         a = synth[selected_bank].dial_state[13] * dial_scale[13];
         r = synth[selected_bank].dial_state[14] * dial_scale[14];
@@ -339,7 +351,19 @@ float doOsc(Uint32 oscid, float input1, float input2)
         o = (aliased_sin(oscphase[oscid]) * a) * d1;
         if(t > 0)
         {
-            o += (getSlantSine(oscphase[oscid], r) * a) * d2;
+            float tr, rb, rd;
+            modff(r, &rb);
+            rd = r-rb;
+            if(r < 29.f && rd > 0.f)
+            {
+                tr =  getSlantSine(oscphase[oscid], rb) * (1.f-rd);
+                tr += getSlantSine(oscphase[oscid], rb+1.f) * rd;
+            }
+            else
+            {
+                tr = getSlantSine(oscphase[oscid], r);
+            }
+            o += (tr * a) * d2;
         }
     }
     else if(t <= 0.3333333433f)
@@ -348,10 +372,34 @@ float doOsc(Uint32 oscid, float input1, float input2)
         float d2 = 0.1666666716f - d1;
         d1 *= 6.f;
         d2 *= 6.f;
-        o = (getSlantSine(oscphase[oscid], r) * a) * d1;
-        if(t > 0)
+
+        float tr, rb, rd;
+        modff(r, &rb);
+        rd = r-rb;
+
+        if(r < 29.f && rd > 0.f)
         {
-            o += (getSquare(oscphase[oscid], r) * a) * d2;
+            tr =  getSlantSine(oscphase[oscid], rb) * (1.f-rd);
+            tr += getSlantSine(oscphase[oscid], rb+1.f) * rd;
+        }
+        else
+        {
+            tr = getSlantSine(oscphase[oscid], r);
+        }
+        o = (tr * a) * d1;
+
+        if(t > 0.1666666716f)
+        {
+            if(r < 29.f && rd > 0.f)
+            {
+                tr =  getSquare(oscphase[oscid], rb) * (1.f-rd);
+                tr += getSquare(oscphase[oscid], rb+1.f) * rd;
+            }
+            else
+            {
+                tr = getSquare(oscphase[oscid], r);
+            }
+            o += (tr * a) * d2;
         }
     }
     else if(t <= 0.50f)
@@ -360,10 +408,34 @@ float doOsc(Uint32 oscid, float input1, float input2)
         float d2 = 0.1666666716f - d1;
         d1 *= 6.f;
         d2 *= 6.f;
-        o = (getSquare(oscphase[oscid], r) * a) * d1;
-        if(t > 0)
+
+        float tr, rb, rd;
+        modff(r, &rb);
+        rd = r-rb;
+
+        if(r < 29.f && rd > 0.f)
         {
-            o += (getSawtooth(oscphase[oscid], r) * a) * d2;
+            tr =  getSquare(oscphase[oscid], rb) * (1.f-rd);
+            tr += getSquare(oscphase[oscid], rb+1.f) * rd;
+        }
+        else
+        {
+            tr = getSquare(oscphase[oscid], r);
+        }
+        o = (tr * a) * d1;
+
+        if(t > 0.3333333433f)
+        {
+            if(r < 29.f && rd > 0.f)
+            {
+                tr =  getSawtooth(oscphase[oscid], rb) * (1.f-rd);
+                tr += getSawtooth(oscphase[oscid], rb+1.f) * rd;
+            }
+            else
+            {
+                tr = getSawtooth(oscphase[oscid], r);
+            }
+            o += (tr * a) * d2;
         }
     }
     else if(t <= 0.6666666865f)
@@ -372,10 +444,34 @@ float doOsc(Uint32 oscid, float input1, float input2)
         float d2 = 0.1666666716f - d1;
         d1 *= 6.f;
         d2 *= 6.f;
-        o = (getSawtooth(oscphase[oscid], r) * a) * d1;
-        if(t > 0)
+
+        float tr, rb, rd;
+        modff(r, &rb);
+        rd = r-rb;
+
+        if(r < 29.f && rd > 0.f)
         {
-            o += (getTriangle(oscphase[oscid], r) * a) * d2;
+            tr =  getSawtooth(oscphase[oscid], rb) * (1.f-rd);
+            tr += getSawtooth(oscphase[oscid], rb+1.f) * rd;
+        }
+        else
+        {
+            tr = getSawtooth(oscphase[oscid], r);
+        }
+        o = (tr * a) * d1;
+        
+        if(t > 0.50f)
+        {
+            if(r < 29.f && rd > 0.f)
+            {
+                tr =  getTriangle(oscphase[oscid], rb) * (1.f-rd);
+                tr += getTriangle(oscphase[oscid], rb+1.f) * rd;
+            }
+            else
+            {
+                tr = getTriangle(oscphase[oscid], r);
+            }
+            o += (tr * a) * d2;
         }
     }
     else if(t <= 0.8333333731f)
@@ -384,10 +480,34 @@ float doOsc(Uint32 oscid, float input1, float input2)
         float d2 = 0.1666666716f - d1;
         d1 *= 6.f;
         d2 *= 6.f;
-        o = (getTriangle(oscphase[oscid], r) * a) * d1;
-        if(t > 0)
+
+        float tr, rb, rd;
+        modff(r, &rb);
+        rd = r-rb;
+
+        if(r < 29.f && rd > 0.f)
         {
-            o += (getImpulse(oscphase[oscid], r) * a) * d2;
+            tr =  getTriangle(oscphase[oscid], rb) * (1.f-rd);
+            tr += getTriangle(oscphase[oscid], rb+1.f) * rd;
+        }
+        else
+        {
+            tr = getTriangle(oscphase[oscid], r);
+        }
+        o = (tr * a) * d1;
+        
+        if(t > 0.6666666865f)
+        {
+            if(r < 29.f && rd > 0.f)
+            {
+                tr =  getImpulse(oscphase[oscid], rb) * (1.f-rd);
+                tr += getImpulse(oscphase[oscid], rb+1.f) * rd;
+            }
+            else
+            {
+                tr = getImpulse(oscphase[oscid], r);
+            }
+            o += (tr * a) * d2;
         }
     }
     else
@@ -396,10 +516,34 @@ float doOsc(Uint32 oscid, float input1, float input2)
         float d2 = 0.1666666716f - d1;
         d1 *= 6.f;
         d2 *= 6.f;
-        o = (getImpulse(oscphase[oscid], r) * a) * d1;
-        if(t > 0)
+
+        float tr, rb, rd;
+        modff(r, &rb);
+        rd = r-rb;
+
+        if(r < 29.f && rd > 0.f)
         {
-            o += (getViolin(oscphase[oscid], r) * a) * d2;
+            tr =  getImpulse(oscphase[oscid], rb) * (1.f-rd);
+            tr += getImpulse(oscphase[oscid], rb+1.f) * rd;
+        }
+        else
+        {
+            tr = getImpulse(oscphase[oscid], r);
+        }
+        o = (tr * a) * d1;
+        
+        if(t > 0.8333333731f)
+        {
+            if(r < 29.f && rd > 0.f)
+            {
+                tr =  getViolin(oscphase[oscid], rb) * (1.f-rd);
+                tr += getViolin(oscphase[oscid], rb+1.f) * rd;
+            }
+            else
+            {
+                tr = getViolin(oscphase[oscid], r);
+            }
+            o += (tr * a) * d2;
         }
     }
 
@@ -930,7 +1074,7 @@ void render(SDL_Surface* screen)
         static char tval[256];
         if(themeon == 2)
         {
-            drawText(bb, tval, 319, 288, 1); // 321, 288 :: 145, 329
+            drawText(bb, tval, 319, 288, 0); // 321, 288 :: 145, 329
             if(SDL_GetTicks() > st)
             {
                 st = 0;
@@ -1017,7 +1161,7 @@ int main(int argc, char *argv[])
     }
 
     // credit
-    printf("Borg ER-3 by James William Fletcher\n");
+    printf("Borg ER-3 by James William Fletcher (v1.0.2)\n\n");
 
     // get app dir
     basedir = SDL_GetBasePath();
@@ -1046,8 +1190,10 @@ int main(int argc, char *argv[])
     printf("Adjust the dials by left clicking and dragging or hovering and scrolling mouse 3 in the Y axis.\n");
     printf("\n");
     printf("Binds to play audio: spacebar, mouse3, mouse4\n");
+    printf("Flip sign of dial: mouse3, mouse4\n");
     printf("Reset envelope: right click on it\n");
     printf("Scroll dial sensitivity selection: right click, three sensitvity options\n");
+    printf("Reset/disable multiple selection button: right click on button\n");
     printf("\n");
     printf("BIQUADS are executed from left to right, first BIQUAD 1, then 2, then 3.\n");
     printf("\n");
@@ -1055,13 +1201,15 @@ int main(int argc, char *argv[])
     printf("\n");
     printf("Source: https://github.com/mrbid/Borg-ER-3\n");
     printf("https://meettechniek.info/additional/additive-synthesis.html\n\n");
-    
 
     // load assets
     loadAssets(screen);
 
     // load bank
     loadState();
+
+    // set reciprocal sample rate
+    reciprocal_sample_rate = 1.f/(float)SAMPLE_RATE;
 
     //init audio
     initMonoAudio(SAMPLE_RATE);
@@ -1339,6 +1487,51 @@ int main(int argc, char *argv[])
 
                     if(event.button.button == SDL_BUTTON_RIGHT)
                     {
+                        // check right click on multiple-selection buttons
+                        Uint8 sc = 0;
+                        if(sc == 0)
+                        {
+                            for(int i = 0; i < 10; i++)
+                            {
+                                if(ui.am_hover[i] == 1)
+                                {
+                                    sc=1;
+                                    synth[selected_bank].am_state[i] = 0;
+                                    doSynth(0);
+                                    render(screen);
+                                    break;
+                                }
+                            }
+                        }
+                        if(sc == 0)
+                        {
+                            for(int i = 0; i < 10; i++)
+                            {
+                                if(ui.mul_hover[i] == 1)
+                                {
+                                    sc=1;
+                                    synth[selected_bank].mul_state[i] = 0;
+                                    doSynth(0);
+                                    render(screen);
+                                    break;
+                                }
+                            }
+                        }
+                        if(sc == 0)
+                        {
+                            for(int i = 0; i < 10; i++)
+                            {
+                                if(ui.fm_hover[i] == 1)
+                                {
+                                    sc=1;
+                                    synth[selected_bank].fm_state[i] = 0;
+                                    doSynth(0);
+                                    render(screen);
+                                    break;
+                                }
+                            }
+                        }
+
                         // reset envelope
                         if(x > 6 && x < 473 && y > 155 && y < 282)
                         {
@@ -1367,7 +1560,19 @@ int main(int argc, char *argv[])
                     }
                     else if(event.button.button == SDL_BUTTON_X1 || event.button.button == SDL_BUTTON_MIDDLE)
                     {
-                        doSynth(1);
+                        Uint8 wd = 1;
+                        for(int i = 0; i < 50; i++)
+                        {
+                            if(ui.dial_hover[i] == 1)
+                            {
+                                if(dial_neg[i] == 1)
+                                    synth[selected_bank].dial_state[i] *= -1;
+                                wd = 0;
+                                break;
+                            }
+                        }
+                        
+                        doSynth(wd);
                         render(screen);
                     }
                     else if(event.button.button == SDL_BUTTON_LEFT)
@@ -1558,3 +1763,4 @@ int main(int argc, char *argv[])
     //Done.
     return 0;
 }
+
