@@ -6,8 +6,8 @@
 	<name>Borg ER-3</name>
 	<summary>A portable (SDL) audio synthesizer / tone generator inspired by the Korg ER-1</summary>
 	<description>
-		<p>This is fixed-state modular synthesizer using FART oscillators, which if you can hold back the chuckles for just a moment stands for Frequency, Amplitude, Resolution, and Transformation oscillators, where the resolution regards harmonic resolution and transformation regards which wave-shape is being produced by the oscillator.</p>
-		<p>The envelope can be clicked and dragged into any shape, and the biquads can be manually configured on a per coefficient basis, they are executed in sequential order so BIQUAD 1 executes first.</p>
+		<p>Fixed-state modular synthesizer using FART oscillators, if you can hold back the chuckles for a moment stands for Frequency, Amplitude, Resolution, and Transformation oscillators, the resolution regards harmonic resolution and transformation regards the wave-shape being produced by the oscillator.</p>
+		<p>The envelope can be clicked and dragged into any shape, the biquads can be manually configured on a per coefficient basis, they are executed in sequential order so BIQUAD 1 executes first.</p>
 		<p>Exported files save to ~/EXPORTS/Borg_ER-3/</p>
 	</description>
 	<screenshots>
