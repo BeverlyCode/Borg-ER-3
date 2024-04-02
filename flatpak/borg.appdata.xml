@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<application>
-	<id type="desktop">borg.desktop</id>
+<component type="desktop-application">
+	<id>borg.desktop</id>
 	<metadata_license>CC-BY-4.0</metadata_license>
 	<project_license>MIT</project_license>
 	<name>Borg ER-3</name>
@@ -18,5 +18,4 @@
 		<release version="1.0.3" date="2023-12-07" />
 	</releases>
 	<content_rating type="oars-1.0" />
-	<component type="desktop-application">
-</application>
+</component>
