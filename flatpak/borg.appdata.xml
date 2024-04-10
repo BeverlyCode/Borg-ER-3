@@ -22,7 +22,7 @@
 	<releases>
 		<release version="1.0.4" date="2024-04-09">
 			<description>On X11 the mouse now warps back to the center of the dial on mouse up/release.</description>
-		<release>
+		</release>
 	</releases>
 	<content_rating type="oars-1.0" />
 </component>
